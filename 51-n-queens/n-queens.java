@@ -1,103 +1,72 @@
 class Solution {
 
-    List<List<String>> res = new LinkedList<>();
+    // Stores all valid N-Queens board configurations
+    List<List<String>> result = new ArrayList<>();
+
+    // col[c] = true → column c already has a queen
+    boolean[] col;
+
+    // diag1[d] = true → main diagonal (row - col) has a queen
+    boolean[] diag1;
+
+    // diag2[d] = true → anti-diagonal (row + col) has a queen
+    boolean[] diag2;
 
     public List<List<String>> solveNQueens(int n) {
-         char[][] board = new char[n][n];
-        for (char[] cs : board) {
-            Arrays.fill(cs, '.');
-        }
-        helper(board, 0, 0, n);
-        return res;
+
+        // Initialize helper arrays for columns and diagonals
+        col = new boolean[n];          // n columns
+        diag1 = new boolean[2 * n];    // main diagonals
+        diag2 = new boolean[2 * n];    // anti-diagonals
+
+        // Create an empty chessboard filled with '.'
+        char[][] board = new char[n][n];
+        for (int i = 0; i < n; i++)
+            Arrays.fill(board[i], '.');
+
+        // Start placing queens from row 0
+        backtrack(0, board, n);
+
+        // Return all valid configurations
+        return result;
     }
 
-    private void helper(char[][] board, int row, int col, int n) {
-        // Column out of bound
-        if (col == board[0].length) {
-            col = 0;
-            row++;
-        }
-        // n is 0 then add to the res
-        if (n == 0) {
-            res.add(toString(board));
+    // Backtracking function to place queens row by row
+    private void backtrack(int row, char[][] board, int n) {
+
+        // Base case: all rows filled → valid solution found
+        if (row == n) {
+            List<String> config = new ArrayList<>();
+
+            // Convert current board state to List<String>
+            for (char[] r : board)
+                config.add(new String(r));
+
+            // Add configuration to result list
+            result.add(config);
             return;
         }
-        // Row out of bound
-        if (row == board.length)
-            return;
 
-        // Place queen here if valid
-        if (isValid(board, row, col)) {
-            board[row][col] = 'Q';
-            n--;
-            helper(board, row, col + 1, n);
-            // backtrack unchoose the option
-            board[row][col] = '.';
-            n++;
-        }
+        // Try placing a queen in each column of the current row
+        for (int c = 0; c < n; c++) {
 
-        // Skip this cell, we place a '.'
-        helper(board, row, col + 1, n);
-    }
+            // Calculate indices for diagonals
+            int d1 = row - c + n;  // main diagonal index
+            int d2 = row + c;      // anti-diagonal index
 
-    private List<String> toString(char[][] board) {
-        List<String> list = new LinkedList<>();
-        StringBuilder str;
-        for (char[] cs : board) {
-            str = new StringBuilder();
-            for (char cur : cs) {
-                str.append(cur);
-            }
-            list.add(str.toString());
-        }
-        return list;
-    }
+            // If column or diagonals already have a queen → skip
+            if (col[c] || diag1[d1] || diag2[d2]) continue;
 
-    private boolean isValid(char[][] board, int row, int col) {
-        int N = board.length;
-        // TOP AND DOWN
-        for (int i = 0; i < N; i++) {
-            if (board[i][col] != '.')
-                return false;
-            if (board[row][i] != '.')
-                return false;
+            // Place queen at (row, c)
+            col[c] = diag1[d1] = diag2[d2] = true;
+            board[row][c] = 'Q';
+
+            // Move to next row
+            backtrack(row + 1, board, n);
+
+            // Backtrack: remove queen and free column & diagonals
+            board[row][c] = '.';
+            col[c] = diag1[d1] = diag2[d2] = false;
         }
-        // Top left + top right + down left + down right
-        int i = row, j = col;
-        // Top left
-        while (0 <= i && 0 <= j) {
-            if (board[i][j] != '.')
-                return false;
-            i--;
-            j--;
-        }
-        // Top right
-        i = row;
-        j = col;
-        while (0 <= i && j < N) {
-            if (board[i][j] != '.')
-                return false;
-            i--;
-            j++;
-        }
-        // Down Right
-        i = row;
-        j = col;
-        while (i < N && j < N) {
-            if (board[i][j] != '.')
-                return false;
-            i++;
-            j++;
-        }
-        // Down left
-        i = row;
-        j = col;
-        while (i < N && 0 <= j) {
-            if (board[i][j] != '.')
-                return false;
-            i++;
-            j--;
-        }
-        return true;
     }
 }
