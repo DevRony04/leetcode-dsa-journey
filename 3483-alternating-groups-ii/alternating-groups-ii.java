@@ -1,32 +1,18 @@
 class Solution {
     public int numberOfAlternatingGroups(int[] colors, int k) {
-         int n = colors.length;
-        int count = 0;
-        int validPairs = 0;
-
-        // Check first window (k-1 adjacent pairs)
-        for (int i = 1; i < k; i++) {
-            if (colors[i % n] != colors[(i - 1) % n]) {
-                validPairs++;
+        int res = 0;
+        int left = 0;
+        int n = colors.length;
+        for(int right = 1; right<(n+k-1); right++){
+            // skip entire subarray
+            if(colors[right%n] == colors[(right-1)%n]){
+                left = right;
+            }
+            if(right-left+1==k){
+              res++;
+              left++; // move to next subarray
             }
         }
-
-        if (validPairs == k - 1) count++;
-
-        // Slide window across the circle
-        for (int i = k; i < n + k - 1; i++) {
-            // Remove leftmost pair
-            if (colors[(i - k + 1) % n] != colors[(i - k) % n]) {
-                validPairs--;
-            }
-            // Add rightmost pair
-            if (colors[i % n] != colors[(i - 1) % n]) {
-                validPairs++;
-            }
-
-            if (validPairs == k - 1) count++;
-        }
-
-        return count;
+        return res;
     }
 }
